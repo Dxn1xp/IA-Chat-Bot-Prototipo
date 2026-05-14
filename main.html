@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,25 +9,80 @@
 <body>
     <div class="BLOCO-CENTRAL">
         <div class="H1-a">
-        <h1>VENDI IA</h1>
-            </div> <!-- TITULO DA IA -->
+            <h1>VENDI IA</h1>
+        </div>
         <div class="chat">
             <div class="image">
-                <img src="./assets/robot.png" alt="">
+                <img src="./assets/robot.png" alt="Avatar IA">
             </div>
-            <div class="chat-messagens">
-                <div class="usuario-messagem">
+            <div class="chat-mensagens" id="chat-box">
+                <div class="usuario-mensagem">
                     <p>Olá VENDI IA</p>
                 </div>
-                <div class="ia-messagem">
-                    <p>Olá, me chamo VENDI IA, Como posso te ajudar?</p>
+                <div class="ia-mensagem">
+                    <p>Olá, me chamo VENDI IA, como posso te ajudar?</p>
                 </div>
             </div>
             <div class="chat-input">
-                <input type="text" placeholder="Digite sua mensagem...">
-                <button>Enviar</button>
+                <input type="text" id="user-input" placeholder="Digite sua mensagem...">
+                <button id="send-btn">Enviar</button>
             </div>
+        </div>
     </div>
-    </div>
+
+   <script>
+    const sendBtn = document.getElementById("send-btn");
+    const userInput = document.getElementById("user-input");
+    const chatBox = document.getElementById("chat-box");
+
+    async function sendMessage() {
+        const message = userInput.value.trim();
+        if (!message) return;
+
+        // Exibe a mensagem do usuário
+        const userMsgDiv = document.createElement("div");
+        userMsgDiv.className = "usuario-mensagem";
+        userMsgDiv.innerHTML = `<p>${message}</p>`;
+        chatBox.appendChild(userMsgDiv);
+
+        // Limpa o input
+        userInput.value = "";
+
+        try {
+            const response = await fetch("http://127.0.0.1:5000/chat", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ message })
+            });
+
+            const data = await response.json();
+
+            // Exibe resposta ou erro
+            const iaMsgDiv = document.createElement("div");
+            iaMsgDiv.className = "ia-mensagem";
+            if (data.response) {
+                iaMsgDiv.innerHTML = `<p>${data.response}</p>`;
+            } else {
+                iaMsgDiv.innerHTML = `<p style="color:red;">Erro: ${data.error}</p>`;
+            }
+            chatBox.appendChild(iaMsgDiv);
+
+            // Scroll automático
+            chatBox.scrollTop = chatBox.scrollHeight;
+        } catch (error) {
+            console.error("Erro:", error);
+            const iaMsgDiv = document.createElement("div");
+            iaMsgDiv.className = "ia-mensagem";
+            iaMsgDiv.innerHTML = `<p style="color:red;">Falha na conexão com o servidor.</p>`;
+            chatBox.appendChild(iaMsgDiv);
+        }
+    }
+
+    sendBtn.addEventListener("click", sendMessage);
+    userInput.addEventListener("keypress", (e) => {
+        if (e.key === "Enter") sendMessage();
+    });
+</script>
+
 </body>
 </html>
